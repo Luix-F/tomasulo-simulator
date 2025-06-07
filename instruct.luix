@@ -1,0 +1,6 @@
+ADD, $t3, $t2, $t5
+MULT, $t1, $t2, $t7
+MULT, $t4, $t2, $t5
+MULT, $t2, $t2, $t7
+SUB, $t4, $t2, $t5
+SUB, $t4, $t2, $t5
