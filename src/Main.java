@@ -23,19 +23,34 @@ class Mpis{
     // Tabelas visuais
     String[][] VecInstructUnit;
     String[][] Registradores;
+    String[][] RegRenomeacao;
 
     // Tabela de execução
     String[][] UnidadesFuncionais;
 
+    // Tabela para as janelas de instruções
+    String[][][] Estacao_de_Reserva;
+    String[][] Estacao_de_Reserva2;
+    String[][] Estacao_de_Reserva_ALU;
+    String[][] Estacao_de_Reserva_mult;
+    String[][] Estacao_de_Reserva_br;
+    String[][] Estacao_de_Reserva_load;
+    String[][] Estacao_de_Reserva_store;
+
+    // Tamanho da janela de intruções
+    static int Nji = 4;
+
     // Buffer de Reordenamento
     String[][] Reorder;
 
-    //Ciclos por instrução
+    // Ciclos por instrução
     static int Load = 2;
     static int Store = 2;
     static int Mult = 4;
-    static int Div = 4;
     static int Add = 1;
+
+    // quantas instruções serão decodificadas de um asó vez
+    static int Nof = 2;
 
     // Clock
     int Ciclos = 0;
@@ -60,13 +75,22 @@ class Mpis{
                 {"$t4", "vazio"}, {"$t5", "vazio"},
                 {"$t6", "vazio"}, {"$t7", "vazio"},
                 {"$t8", "vazio"}, {"$t9", "vazio"},
-                //Temporários salvos
+                // Temporários salvos
                 {"$s0", "vazio"}, {"$s1", "vazio"},
                 {"$s2", "vazio"},{"$s3", "vazio"},
                 {"$s4", "vazio"},{"$s5", "vazio"},
                 {"$s6", "vazio"}, {"$t7", "vazio"},
+
+
         };
         Registradores = R;
+
+        String RgR[][] = {// Renomeação
+                // Nome, valor, referencia
+                {"$ra", "vazio", "vazio"}, {"$rb", "vazio", "vazio"},
+                {"$rc", "vazio", "vazio"}, {"$rd", "vazio", "vazio"},
+                {"$re", "vazio", "vazio"}, {"$rf", "vazio", "vazio"},
+        };
         Random rand = new Random();
         for (int i = 2; i < Registradores.length; i++) {
             Registradores[i][1] = "" + (rand.nextInt(100) + 1);
@@ -85,6 +109,77 @@ class Mpis{
                 {"SW", "N", "vazio", "vazio", "vazio", "0"}
         };
         UnidadesFuncionais = UF;
+/*
+        String er2[][] ={
+                {"OP", "OP", "ID", "VALOR", "ID", "VALOR", "ID"},
+                {"OP", "OP", "ID", "VALOR", "ID", "VALOR", "ID"},
+                {"OP", "OP", "ID", "VALOR", "ID", "VALOR", "ID"},
+                {"OP", "OP", "ID", "VALOR", "ID", "VALOR", "ID"},
+                {"OP", "OP", "ID", "VALOR", "ID", "VALOR", "ID"},
+                {"OP", "OP", "ID", "VALOR", "ID", "VALOR", "ID"},
+                {"OP", "OP", "ID", "VALOR", "ID", "VALOR", "ID"},
+                {"OP", "OP", "ID", "VALOR", "ID", "VALOR", "ID"},
+                {"OP", "OP", "ID", "VALOR", "ID", "VALOR", "ID"},
+                {"OP", "OP", "ID", "VALOR", "ID", "VALOR", "ID"},
+                {"OP", "OP", "ID", "VALOR", "ID", "VALOR", "ID"},
+                {"OP", "OP", "ID", "VALOR", "ID", "VALOR", "ID"},
+                {"OP", "OP", "ID", "VALOR", "ID", "VALOR", "ID"},
+                {"OP", "OP", "ID", "VALOR", "ID", "VALOR", "ID"},
+                {"OP", "OP", "ID", "VALOR", "ID", "VALOR", "ID"},
+                {"OP", "OP", "ID", "VALOR", "ID", "VALOR", "ID"},
+                {"OP", "OP", "ID", "VALOR", "ID", "VALOR", "ID"},
+                {"OP", "OP", "ID", "VALOR", "ID", "VALOR", "ID"},
+                {"OP", "OP", "ID", "VALOR", "ID", "VALOR", "ID"},
+                {"OP", "OP", "ID", "VALOR", "ID", "VALOR", "ID"},
+        };
+        Estacao_de_Reserva2 = er2;
+
+        // Exemplo Estacao_de_Reserva
+        String er[][][] = {
+                {
+                        {"OP", "ID", "VALOR", "ID", "VALOR", "ID"},
+                        {"OP", "ID", "VALOR", "ID", "VALOR", "ID"},
+                        {"OP", "ID", "VALOR", "ID", "VALOR", "ID"},
+                        {"OP", "ID", "VALOR", "ID", "VALOR", "ID"},
+                        {"OP", "ID", "VALOR", "ID", "VALOR", "ID"},
+                        {"OP", "ID", "VALOR", "ID", "VALOR", "ID"},
+                        {"OP", "ID", "VALOR", "ID", "VALOR", "ID"},
+                        {"OP", "ID", "VALOR", "ID", "VALOR", "ID"},
+                        {"OP", "ID", "VALOR", "ID", "VALOR", "ID"},
+                },
+                {
+                        {"OP", "ID", "VALOR", "ID", "VALOR", "ID"},
+                        {"OP", "ID", "VALOR", "ID", "VALOR", "ID"},
+                        {"OP", "ID", "VALOR", "ID", "VALOR", "ID"},
+                        {"OP", "ID", "VALOR", "ID", "VALOR", "ID"},
+                        {"OP", "ID", "VALOR", "ID", "VALOR", "ID"},
+                        {"OP", "ID", "VALOR", "ID", "VALOR", "ID"},
+                        {"OP", "ID", "VALOR", "ID", "VALOR", "ID"},
+                        {"OP", "ID", "VALOR", "ID", "VALOR", "ID"},
+                        {"OP", "ID", "VALOR", "ID", "VALOR", "ID"},
+                },
+        };
+        // Exemplo Estacao_de_Reserva
+        Estacao_de_Reserva = new String[UnidadesFuncionais.length][Nji][6];
+        for (int i = 0; i < UnidadesFuncionais.length; i++) {
+            for (int j = 0; j < Nji; j++) {
+                for (int k = 0; k < 6; k++) {
+                    Estacao_de_Reserva[i][j][k] = "vazio";
+                }
+            }
+        }*/
+        String er[][] = {
+                {"OP", "ID", "VALOR", "ID", "VALOR", "ID"},
+                {"OP", "ID", "VALOR", "ID", "VALOR", "ID"},
+                {"OP", "ID", "VALOR", "ID", "VALOR", "ID"},
+                {"OP", "ID", "VALOR", "ID", "VALOR", "ID"},
+        };
+
+        Estacao_de_Reserva_ALU = er;
+        Estacao_de_Reserva_mult = er;
+        Estacao_de_Reserva_load = er;
+        Estacao_de_Reserva_store = er;
+        Estacao_de_Reserva_br = er;
 
         Reorder = new String[VecInstructUnit.length][3]; /*{
                 //Instrução, Estado, valor
@@ -97,6 +192,7 @@ class Mpis{
         }
         //Reorder = BF;
     }
+
     // Responsavel por verificar quantos ciclos uma instrução demora
     public int TempoDeExecucao(int id){
         if (UnidadesFuncionais[id][0].equals("ADD")){
@@ -132,8 +228,55 @@ class Mpis{
         }
     }
 
+    // Despacha a instrução para a execução e atualiza a Estação de Reserva
+    public int Despacho(){
+        for (int i = 0; i < Estacao_de_Reserva_ALU.length; i++) {
+            if (!(Estacao_de_Reserva_ALU[i][0].equals("OP"))){
+                Exec(Estacao_de_Reserva_ALU[i]);
+                for (int j = 1; j < Estacao_de_Reserva_ALU.length; j++) {
+                    Estacao_de_Reserva_ALU[i-1] = Estacao_de_Reserva_ALU[i];
+                }
+                String er[] = {"OP", "ID", "VALOR", "ID", "VALOR", "ID"};
+                Estacao_de_Reserva_ALU[Estacao_de_Reserva_ALU.length-1] = er;
+            }
+        }
+        return 0;
+    }
+
+    public void Exec(String[] instrucao){
+        //
+    }
+
+    // Posição da unidade funcional
+    public int[] PosicaoUF(String op){
+        if (op.equals("ADD")){
+            int[] pointer= {0,2};
+            return pointer;
+        } else if (op.equals("SUB")) {
+            int[] pointer= {0,2};
+            return pointer;
+        }else if (op.equals("MULT")) {
+            int[] pointer= {3,4};
+            return pointer;
+        }else if (op.equals("LD")) {
+            int[] pointer= {5,6};
+            return pointer;
+        }else if (op.equals("SW")) {
+            int[] pointer= {7,8};
+            return pointer;
+        }else if (op.equals("DIV")) {
+            int[] pointer= {3,4};
+            return pointer;
+        }else if (op.equals("SUB")) {
+            int[] pointer= {0,2};
+            return pointer;
+        }
+        int[] pointer= {0,2};
+        return pointer;
+    }
+
     // Carrega a tarefa para a execução
-    public int Despacho(int r0, int r1, int r2, int[] instructionPoint){
+    public int Execucao(int r0, int r1, int r2, int[] instructionPoint){
         for (int i = instructionPoint[0]; i <= instructionPoint[1]; i++) {
             System.out.printf("UnidadesFuncionais[i][1]:" + UnidadesFuncionais[i][1] + " - " + i + "\n");
             if ((UnidadesFuncionais[i][1].equals("N"))){
@@ -141,6 +284,35 @@ class Mpis{
                 UnidadesFuncionais[i][2] = Registradores[r0][0];
                 UnidadesFuncionais[i][3] = Registradores[r1][0];
                 UnidadesFuncionais[i][4] = Registradores[r2][0];
+
+                return 0;
+            }
+        }
+        return 0;
+    }
+
+    // Estação de Reserva
+    public int EstacaoDeReserva(int r0, int r1, int r2, int[] instructionPoint){
+        for (int i = 0; i < Estacao_de_Reserva2.length; i++) {
+            if (Estacao_de_Reserva2[i][0].equals("OP")){
+                //   0     1     2     3        4     5        6
+                // {"OP", "OP", "ID", "VALOR", "ID", "VALOR", "ID"},
+                Estacao_de_Reserva2[i][0] = "" + instructionPoint[0];
+                Estacao_de_Reserva2[i][1] = "" + instructionPoint[1];
+                Estacao_de_Reserva2[i][2] = "" + r0;
+                Estacao_de_Reserva2[i][4] = "" + r1;
+                Estacao_de_Reserva2[i][6] = "" + r2;
+            }
+        }
+        return 0;
+    }
+
+    public int Estacaodereserva_ALU(String[] s){
+        for (int i = 0; i < Estacao_de_Reserva_ALU.length; i++) {
+            if (Estacao_de_Reserva_ALU[i][1].equals("ID")){
+                for (int j = 0; j < Estacao_de_Reserva_ALU[0].length; j++) {
+                    Estacao_de_Reserva_ALU[i][j] = s[j];
+                }
                 Pc++;
                 return 0;
             }
@@ -148,10 +320,103 @@ class Mpis{
         return 0;
     }
 
+    public int Estacaodereserva_mult(String[] s){
+        for (int i = 0; i < Estacao_de_Reserva_mult.length; i++) {
+            if (Estacao_de_Reserva_mult[i][1].equals("ID")){
+                for (int j = 0; j < Estacao_de_Reserva_mult[0].length; j++) {
+                    Estacao_de_Reserva_mult[i][j] = s[j];
+                }
+                Pc++;
+                return 0;
+            }
+        }
+        return 0;
+    }
+
+    public int Estacaodereserva_load(String[] s){
+        for (int i = 0; i < Estacao_de_Reserva_load.length; i++) {
+            if (Estacao_de_Reserva_load[i][1].equals("ID")){
+                for (int j = 0; j < Estacao_de_Reserva_load[0].length; j++) {
+                    Estacao_de_Reserva_load[i][j] = s[j];
+                }
+                Pc++;
+                return 0;
+            }
+        }
+        return 0;
+    }
+
+    public int Estacaodereserva_store(String[] s){
+        for (int i = 0; i < Estacao_de_Reserva_store.length; i++) {
+            if (Estacao_de_Reserva_store[i][1].equals("ID")){
+                for (int j = 0; j < Estacao_de_Reserva_store[0].length; j++) {
+                    Estacao_de_Reserva_store[i][j] = s[j];
+                }
+                Pc++;
+                return 0;
+            }
+        }
+        return 0;
+    }
+
+    public int Estacaodereserva_br(String[] s){
+        for (int i = 0; i < Estacao_de_Reserva_br.length; i++) {
+            if (Estacao_de_Reserva_br[i][1].equals("ID")){
+                for (int j = 0; j < Estacao_de_Reserva_br[0].length; j++) {
+                    Estacao_de_Reserva_br[i][j] = s[j];
+                }
+                Pc++;
+                return 0;
+            }
+        }
+        return 0;
+    }
+
+    // Encontra registrador de renomeação livre
+    public int Renomeacao(){
+        for (int i = 0; i < RegRenomeacao.length; i++) {
+            if (RegRenomeacao[i][1].equals("vazio")){
+                return i;
+            }
+        }
+        return 0;
+    }
+
+    // Indendifica dependencias
+    public String[] Dependencias(int r0, int r1, int r2, String op){
+        //   0     1     2        3     4        5
+        // {"OP", "ID", "VALOR", "ID", "VALOR", "ID"},
+        String ER[] = {"vazio", "vazio", "vazio", "vazio", "vazio", "vazio",};
+        ER[2] = Registradores[r1][1];
+        ER[4] = Registradores[r2][1];
+        ER[1] = ""+r0;
+        for (int i = 0; i < Estacao_de_Reserva2.length; i++) {
+            String s1 = ""+r1;
+            String s2 = ""+r2;
+            String s0 = ""+r0;
+
+            ER[0] = op;
+            //ER[1] = ""+r0;
+            if (Estacao_de_Reserva_ALU[i][1].equals(s1) || Estacao_de_Reserva_mult[i][1].equals(s1)){ //
+                ER[3] = Registradores[r1][0];
+                ER[2] = "vazio";
+            }else
+            if (Estacao_de_Reserva_ALU[i][1].equals(s2)) {
+                ER[5] = Registradores[r2][0];
+                ER[4] = "vazio";
+            }else
+            if((Estacao_de_Reserva_ALU[i][3].equals(s0) || Estacao_de_Reserva_ALU[i][5].equals(s0))){ // ant-dependência
+                int rgr = Renomeacao();
+                ER[1] = RegRenomeacao[rgr][0];
+                RegRenomeacao[rgr][2] = RegRenomeacao[r0][0];
+            }
+        }
+        return ER;
+    }
+
     // Decodifica a Instrução
     public void Decode(int id){
         int a = -1; int b = -1; int c = -1;
-        String instruction = "none";
         if (VecInstructUnit[id][0].equals("ADD")){
             for (int j = 0; j < Registradores.length; j++){
                 if (VecInstructUnit[id][1].equals(Registradores[j][0]) && j > 1){
@@ -164,8 +429,8 @@ class Mpis{
                     c = j;
                 }
             }
-            int[] poiter= {0,2};
-            Despacho(a,b,c,poiter);
+            String[] s = Dependencias(a,b,c,VecInstructUnit[id][0]);
+            Estacaodereserva_ALU(s);
         }else if(VecInstructUnit[id][0].equals("SUB")){
             for (int j = 0; j < Registradores.length; j++){
                 if (VecInstructUnit[id][1].equals(Registradores[j][0]) && j > 1){
@@ -178,8 +443,8 @@ class Mpis{
                     c = j;
                 }
             }
-            int[] poiter= {0,2};
-            Despacho(a,b,c,poiter);
+            String[] s = Dependencias(a,b,c,VecInstructUnit[id][0]);
+            Estacaodereserva_ALU(s);
         }else if(VecInstructUnit[id][0].equals("MULT")){
             for (int j = 0; j < Registradores.length; j++){
                 if (VecInstructUnit[id][1].equals(Registradores[j][0]) && j > 1){
@@ -192,8 +457,8 @@ class Mpis{
                     c = j;
                 }
             }
-            int[] poiter= {3,4};
-            Despacho(a,b,c,poiter);
+            String[] s = Dependencias(a,b,c,VecInstructUnit[id][0]);
+            Estacaodereserva_load(s);
         }else if(VecInstructUnit[id][0].equals("LD")){
             for (int j = 0; j < Registradores.length; j++){
                 if (VecInstructUnit[id][1].equals(Registradores[j][0]) && j > 1){
@@ -206,8 +471,8 @@ class Mpis{
                     c = j;
                 }
             }
-            int[] poiter= {5,6};
-            Despacho(a,b,c,poiter);
+            String[] s = Dependencias(a,b,c,VecInstructUnit[id][0]);
+            Estacaodereserva_load(s);
         }else if(VecInstructUnit[id][0].equals("SW")){
             for (int j = 0; j < Registradores.length; j++){
                 if (VecInstructUnit[id][1].equals(Registradores[j][0]) && j > 1){
@@ -220,8 +485,8 @@ class Mpis{
                     c = j;
                 }
             }
-            int[] poiter= {7,8};
-            Despacho(a,b,c,poiter);
+            String[] s = Dependencias(a,b,c,VecInstructUnit[id][0]);
+            Estacaodereserva_store(s);
         }else if(VecInstructUnit[id][0].equals("DIV")){
             for (int j = 0; j < Registradores.length; j++){
                 if (VecInstructUnit[id][1].equals(Registradores[j][0]) && j > 1){
@@ -234,8 +499,8 @@ class Mpis{
                     c = j;
                 }
             }
-            int[] poiter= {3,4};
-            Despacho(a,b,c,poiter);
+            String[] s = Dependencias(a,b,c,VecInstructUnit[id][0]);
+            Estacaodereserva_mult(s);
         }
     }
 
