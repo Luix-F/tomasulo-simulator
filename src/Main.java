@@ -57,6 +57,9 @@ class Mpis{
     String[][] Estacao_de_Reserva_load;
     String[][] Estacao_de_Reserva_store;
 
+    // Memoria principal
+    String[] Memoria;
+
     // Tamanho da janela de intruções
     static int Nji = 4;
 
@@ -116,6 +119,10 @@ class Mpis{
         Random rand = new Random();
         for (int i = 2; i < Registradores.length; i++) {
             Registradores[i][1] = "" + i;//(rand.nextInt(100) + 1);
+        }
+        Memoria = new String[2048];
+        for (int i = 0; i < Memoria.length; i++) {
+            Memoria[i] = "" + i;//(rand.nextInt(100));
         }
 
         String UF[][] = {
@@ -192,10 +199,9 @@ class Mpis{
             return b - c;
         }else if (op.equals("MULT")) {
             return b * c;
-        }else if (op.equals("LD-")) {
-            return 9;
-        }else if (op.equals("SW-")) {
-            return 9;
+        }else if (op.equals("LD")) {
+            Integer numero = Integer.valueOf(Memoria[b+c]);
+            return numero.intValue();
         }else if (op.equals("DIV")) {
             return b / c;
         }else if (op.equals("ooo")) {
@@ -210,25 +216,52 @@ class Mpis{
         if (a.startsWith("$r")) {
             int arr[] = PosicaoReg(RegRenomeacao[RegRenomeadoPosicao(a)][2],b,c);
 
-            Integer numero = Integer.valueOf(Registradores[arr[1]][1]);
-            int bP = numero.intValue();
+            int bP = 0;
+            Integer numero;
+            if (arr[1] != -1){
+                numero = Integer.valueOf(Registradores[arr[1]][1]);
+                bP = numero.intValue();
+            }else {
+                numero = Integer.valueOf(b);
+                bP = numero.intValue();
+            }
 
             numero = Integer.valueOf(Registradores[arr[2]][1]);
             int cP = numero.intValue();
-            r = OperacaoReal(op, bP, cP);
 
-            RegRenomeacao[RegRenomeadoPosicao(a)][1] = ""+r;
+            if (!op.equals("SW")) {
+                r = OperacaoReal(op, bP, cP);
+                RegRenomeacao[RegRenomeadoPosicao(a)][1] = "" + r;
+            }else {
+                Memoria[bP+cP] = RegRenomeacao[RegRenomeadoPosicao(a)][1];
+                numero = Integer.valueOf(RegRenomeacao[RegRenomeadoPosicao(a)][1]);
+                r = numero.intValue();
+            }
             //Registradores[arr[0]][1] = "" + r;
         }else {
             int arr[] = PosicaoReg(a,b,c);
-            Integer numero = Integer.valueOf(Registradores[arr[1]][1]);
-            int bP = numero.intValue();
+
+            int bP = 0;
+            Integer numero;
+            if (arr[1] != -1){
+                numero = Integer.valueOf(Registradores[arr[1]][1]);
+                bP = numero.intValue();
+            }else {
+                numero = Integer.valueOf(b);
+                bP = numero.intValue();
+            }
 
             numero = Integer.valueOf(Registradores[arr[2]][1]);
             int cP = numero.intValue();
-            r = OperacaoReal(op, bP, cP);
 
-            Registradores[arr[0]][1] = "" + r;
+            if (!op.equals("SW")) {
+                r = OperacaoReal(op, bP, cP);
+                Registradores[arr[0]][1] = "" + r;
+            }else {
+                Memoria[bP+cP] = Registradores[arr[0]][1];
+                numero = Integer.valueOf(Registradores[arr[0]][1]);
+                r = numero.intValue();
+            }
         }
 
 
@@ -371,7 +404,7 @@ class Mpis{
         if (r0.startsWith("$r")) {
 
         }
-        int a = 0, b = 0, c = 0;
+        int a = 0, b = -1, c = 0;
         for (int j = 0; j < Registradores.length; j++) {
             if (r0.equals(Registradores[j][0]) && j > 1) {
                 a = j;
@@ -825,8 +858,12 @@ class Mpis{
                     c = j;
                 }
             }
-
-            String[][] s = Dependencias(Registradores[a][0],Registradores[b][0],Registradores[c][0],VecInstructUnit[id][0], Buffer_De_Reordenamento.length);
+            String[][] s;
+            if (b == -1) {
+                s = Dependencias(Registradores[a][0], VecInstructUnit[id][2], Registradores[c][0], VecInstructUnit[id][0], Buffer_De_Reordenamento.length);
+            }else {
+                s = Dependencias(Registradores[a][0],Registradores[b][0],Registradores[c][0],VecInstructUnit[id][0], Buffer_De_Reordenamento.length);
+            }
             Estacaodereserva_ALU(s[0]);
         }else if(VecInstructUnit[id][0].equals("SUB")){
             for (int j = 0; j < Registradores.length; j++){
@@ -840,7 +877,12 @@ class Mpis{
                     c = j;
                 }
             }
-            String[][] s = Dependencias(Registradores[a][0],Registradores[b][0],Registradores[c][0],VecInstructUnit[id][0], Buffer_De_Reordenamento.length);
+            String[][] s;
+            if (b == -1) {
+                s = Dependencias(Registradores[a][0], VecInstructUnit[id][2], Registradores[c][0], VecInstructUnit[id][0], Buffer_De_Reordenamento.length);
+            }else {
+                s = Dependencias(Registradores[a][0],Registradores[b][0],Registradores[c][0],VecInstructUnit[id][0], Buffer_De_Reordenamento.length);
+            }
             Estacaodereserva_ALU(s[0]);
         }else if(VecInstructUnit[id][0].equals("MULT")){
             for (int j = 0; j < Registradores.length; j++){
@@ -854,7 +896,12 @@ class Mpis{
                     c = j;
                 }
             }
-            String[][] s = Dependencias(Registradores[a][0],Registradores[b][0],Registradores[c][0],VecInstructUnit[id][0], Buffer_De_Reordenamento.length);
+            String[][] s;
+            if (b == -1) {
+                s = Dependencias(Registradores[a][0], VecInstructUnit[id][2], Registradores[c][0], VecInstructUnit[id][0], Buffer_De_Reordenamento.length);
+            }else {
+                s = Dependencias(Registradores[a][0],Registradores[b][0],Registradores[c][0],VecInstructUnit[id][0], Buffer_De_Reordenamento.length);
+            }
             Estacaodereserva_mult(s[0]);
         }else if(VecInstructUnit[id][0].equals("LD")){
             for (int j = 0; j < Registradores.length; j++){
@@ -868,7 +915,12 @@ class Mpis{
                     c = j;
                 }
             }
-            String[][] s = Dependencias(Registradores[a][0],Registradores[b][0],Registradores[c][0],VecInstructUnit[id][0], Buffer_De_Reordenamento.length);
+            String[][] s;
+            if (b == -1) {
+                s = Dependencias(Registradores[a][0], VecInstructUnit[id][2], Registradores[c][0], VecInstructUnit[id][0], Buffer_De_Reordenamento.length);
+            }else {
+                s = Dependencias(Registradores[a][0],Registradores[b][0],Registradores[c][0],VecInstructUnit[id][0], Buffer_De_Reordenamento.length);
+            }
             Estacaodereserva_load(s[0]);
         }else if(VecInstructUnit[id][0].equals("SW")){
             for (int j = 0; j < Registradores.length; j++){
@@ -882,7 +934,12 @@ class Mpis{
                     c = j;
                 }
             }
-            String[][] s = Dependencias(Registradores[a][0],Registradores[b][0],Registradores[c][0],VecInstructUnit[id][0], Buffer_De_Reordenamento.length);
+            String[][] s;
+            if (b == -1) {
+                s = Dependencias(Registradores[a][0], VecInstructUnit[id][2], Registradores[c][0], VecInstructUnit[id][0], Buffer_De_Reordenamento.length);
+            }else {
+                s = Dependencias(Registradores[a][0],Registradores[b][0],Registradores[c][0],VecInstructUnit[id][0], Buffer_De_Reordenamento.length);
+            }
             Estacaodereserva_store(s[0]);
         }else if(VecInstructUnit[id][0].equals("DIV")){
             for (int j = 0; j < Registradores.length; j++){
@@ -896,7 +953,12 @@ class Mpis{
                     c = j;
                 }
             }
-            String[][] s = Dependencias(Registradores[a][0],Registradores[b][0],Registradores[c][0],VecInstructUnit[id][0], Buffer_De_Reordenamento.length);
+            String[][] s;
+            if (b == -1) {
+                s = Dependencias(Registradores[a][0], VecInstructUnit[id][2], Registradores[c][0], VecInstructUnit[id][0], Buffer_De_Reordenamento.length);
+            }else {
+                s = Dependencias(Registradores[a][0],Registradores[b][0],Registradores[c][0],VecInstructUnit[id][0], Buffer_De_Reordenamento.length);
+            }
             Estacaodereserva_mult(s[0]);
         }else if(VecInstructUnit[id][0].equals("BEQ")){/// //////////////////////////////
             for (int j = 0; j < Registradores.length; j++){
@@ -910,7 +972,12 @@ class Mpis{
                     c = j;
                 }
             }
-            String[][] s = Dependencias(Registradores[a][0],Registradores[b][0],Registradores[c][0],VecInstructUnit[id][0], Buffer_De_Reordenamento.length);
+            String[][] s;
+            if (b == -1) {
+                s = Dependencias(Registradores[a][0], VecInstructUnit[id][2], Registradores[c][0], VecInstructUnit[id][0], Buffer_De_Reordenamento.length);
+            }else {
+                s = Dependencias(Registradores[a][0],Registradores[b][0],Registradores[c][0],VecInstructUnit[id][0], Buffer_De_Reordenamento.length);
+            }
             Estacaodereserva_br(s[0]);
         }
     }
