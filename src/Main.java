@@ -63,13 +63,12 @@ class Mpis{
     // Buffer de Reordenamento
     String[][] Buffer_De_Reordenamento;
 
-    int issue = 0;
 
     // Ciclos por instrução
     static int Load = 2;
-    static int Store = 2;
-    static int Mult = 7;
-    static int Add = 5;
+    static int Store = 1;
+    static int Mult = 2;
+    static int Add = 1;
 
     // quantas instruções serão decodificadas de um asó vez
     static int Nof = 2;
@@ -116,7 +115,7 @@ class Mpis{
         RegRenomeacao = cpyMatriz(RgR);
         Random rand = new Random();
         for (int i = 2; i < Registradores.length; i++) {
-            Registradores[i][1] = "" + (rand.nextInt(100) + 1);
+            Registradores[i][1] = "" + i;//(rand.nextInt(100) + 1);
         }
 
         String UF[][] = {
@@ -137,9 +136,7 @@ class Mpis{
             String er[][] = new String[Nji][7];
             String l_er[] = {"OP", "ID", "VALOR", "ID", "VALOR", "ID", "issue"};
             for (int i = 0; i < Nji; i++) {
-                for (int j = 0; j < er[0].length; j++) {
-                    er[i][j] = l_er[j];
-                }
+                er[i] = cpyVec(l_er);
 
             }
 
@@ -195,16 +192,16 @@ class Mpis{
             return b - c;
         }else if (op.equals("MULT")) {
             return b * c;
-        }else if (op.equals("LD")) {
+        }else if (op.equals("LD-")) {
             return 9;
-        }else if (op.equals("SW")) {
+        }else if (op.equals("SW-")) {
             return 9;
         }else if (op.equals("DIV")) {
             return b / c;
-        }else if (op.equals("SUB")) {
+        }else if (op.equals("ooo")) {
             return b - c;
         }
-        return 9;
+        return 999999999;
     }
 
     // Escreve de volta no registrador
@@ -220,7 +217,8 @@ class Mpis{
             int cP = numero.intValue();
             r = OperacaoReal(op, bP, cP);
 
-            Registradores[arr[0]][1] = "" + r;
+            RegRenomeacao[RegRenomeadoPosicao(a)][1] = ""+r;
+            //Registradores[arr[0]][1] = "" + r;
         }else {
             int arr[] = PosicaoReg(a,b,c);
             Integer numero = Integer.valueOf(Registradores[arr[1]][1]);
@@ -251,8 +249,9 @@ class Mpis{
                     UnidadesFuncionais[i][5] = "" + valorPrimitivo;
                 }else {
                     // {"ADD", "N", "vazio", "vazio", "vazio", "0", "issue"},
-                    Buffer_De_Reordenamento[searchIssus(UnidadesFuncionais[i][6])][4] = "" + valorPrimitivo;
-                    Buffer_De_Reordenamento[searchIssus(UnidadesFuncionais[i][6])][5] = ""+WriteBack(UnidadesFuncionais[i][0], UnidadesFuncionais[i][2], UnidadesFuncionais[i][3], UnidadesFuncionais[i][4]);
+
+                    Buffer_De_Reordenamento[searchIssus(UnidadesFuncionais[i][6])][4] = "" + Ciclos;
+                    Buffer_De_Reordenamento[searchIssus(UnidadesFuncionais[i][6])][5] = ""+WriteBack(Buffer_De_Reordenamento[searchIssus(UnidadesFuncionais[i][6])][0], UnidadesFuncionais[i][2], UnidadesFuncionais[i][3], UnidadesFuncionais[i][4]);
 
                     UnidadesFuncionais[i][1] = "N";
                     UnidadesFuncionais[i][2] = "vazio";
@@ -268,8 +267,11 @@ class Mpis{
 
     // Despacha a instrução para a execução e atualiza a Estação de Reserva
     public int Despacho(){
+        if (Pc == 4) {
+            System.out.println();
+        }
         for (int i = 0; i < Estacao_de_Reserva_ALU.length; i++) {
-            if (!(Estacao_de_Reserva_ALU[i][0].equals("OP")) && !(Estacao_de_Reserva_ALU[i][2].equals("VALOR")) && !(Estacao_de_Reserva_ALU[i][4].equals("VALOR"))){
+            if (!(Estacao_de_Reserva_ALU[i][0].equals("OP")) && !(Estacao_de_Reserva_ALU[i][2].equals("VALOR")) && !(Estacao_de_Reserva_ALU[i][4].equals("VALOR")) ){
 
                 if (Exec(Estacao_de_Reserva_ALU[i])){
                     for (int j = i + 1; j < Estacao_de_Reserva_ALU.length; j++) {
@@ -283,7 +285,7 @@ class Mpis{
         }
 
         for (int i = 0; i < Estacao_de_Reserva_mult.length; i++) {
-            if (!(Estacao_de_Reserva_mult[i][0].equals("OP")) && !(Estacao_de_Reserva_mult[i][2].equals("VALOR")) && !(Estacao_de_Reserva_mult[i][4].equals("VALOR"))){
+            if (!(Estacao_de_Reserva_mult[i][0].equals("OP")) && !(Estacao_de_Reserva_mult[i][2].equals("VALOR")) && !(Estacao_de_Reserva_mult[i][4].equals("VALOR")) ){
                 if (Exec(Estacao_de_Reserva_mult[i])) {
                     for (int j = i + 1; j < Estacao_de_Reserva_mult.length; j++) {
                         Estacao_de_Reserva_mult[j - 1] = Estacao_de_Reserva_mult[j];
@@ -296,7 +298,7 @@ class Mpis{
         }
 
         for (int i = 0; i < Estacao_de_Reserva_load.length; i++) {
-            if (!(Estacao_de_Reserva_load[i][0].equals("OP")) && !(Estacao_de_Reserva_load[i][2].equals("VALOR")) && !(Estacao_de_Reserva_load[i][4].equals("VALOR"))){
+            if (!(Estacao_de_Reserva_load[i][0].equals("OP")) && !(Estacao_de_Reserva_load[i][2].equals("VALOR")) && !(Estacao_de_Reserva_load[i][4].equals("VALOR")) ){
                 if (Exec(Estacao_de_Reserva_load[i])) {
                     for (int j = i + 1; j < Estacao_de_Reserva_load.length; j++) {
                         Estacao_de_Reserva_load[j - 1] = Estacao_de_Reserva_load[j];
@@ -309,7 +311,7 @@ class Mpis{
         }
 
         for (int i = 0; i < Estacao_de_Reserva_store.length; i++) {
-            if (!(Estacao_de_Reserva_store[i][0].equals("OP")) && !(Estacao_de_Reserva_store[i][2].equals("VALOR")) && !(Estacao_de_Reserva_store[i][4].equals("VALOR"))){
+            if (!(Estacao_de_Reserva_store[i][0].equals("OP")) && !(Estacao_de_Reserva_store[i][2].equals("VALOR")) && !(Estacao_de_Reserva_store[i][4].equals("VALOR")) ){
                 if (Exec(Estacao_de_Reserva_store[i])) {
                     for (int j = i + 1; j < Estacao_de_Reserva_store.length; j++) {
                         Estacao_de_Reserva_store[j - 1] = Estacao_de_Reserva_store[j];
@@ -322,7 +324,7 @@ class Mpis{
         }
 
         for (int i = 0; i < Estacao_de_Reserva_br.length; i++) {
-            if (!(Estacao_de_Reserva_br[i][0].equals("OP")) && !(Estacao_de_Reserva_br[i][2].equals("VALOR")) && !(Estacao_de_Reserva_br[i][4].equals("VALOR"))){
+            if (!(Estacao_de_Reserva_br[i][0].equals("OP")) && !(Estacao_de_Reserva_br[i][2].equals("VALOR")) && !(Estacao_de_Reserva_br[i][4].equals("VALOR")) ){
                 if (Exec(Estacao_de_Reserva_br[i])) {
                     for (int j = i + 1; j < Estacao_de_Reserva_br.length; j++) {
                         Estacao_de_Reserva_br[j - 1] = Estacao_de_Reserva_br[j];
@@ -346,6 +348,8 @@ class Mpis{
             System.out.printf("UnidadesFuncionais[i][1]:" + UnidadesFuncionais[i][1] + " - " + i + "\n");
             if ((UnidadesFuncionais[i][1].equals("N"))){
                 UnidadesFuncionais[i][1] = "Y";
+
+                //UnidadesFuncionais[i][0] = instrucao[0];
 
                 UnidadesFuncionais[i][2] = instrucao[1];
                 //Integer numero = Integer.valueOf(instrucao[2]); // Retorna um objeto Integer
@@ -515,15 +519,17 @@ class Mpis{
     // Encontra registrador de renomeação livre
     public int Renomeacao(){
         for (int i = 0; i < RegRenomeacao.length; i++) {
-            if (RegRenomeacao[i][1].equals("vazio")){
+            if (RegRenomeacao[i][2].equals("vazio")){
                 return i;
             }
         }
         return 0;
     }
 
+
     // Atualiza os valores de dependencias
     public int AtzD(){
+        //AtzRenomeado();
         for (int i = 0; i < Estacao_de_Reserva_ALU.length; i++) {
             if (!Estacao_de_Reserva_ALU[i][0].equals("OP")){
                 String ER[] = {"OP", "ID", "VALOR", "ID", "VALOR", "ID", "issue"};
@@ -541,6 +547,7 @@ class Mpis{
                         Integer numero = Integer.valueOf(ER[6]);
                         int valr = numero.intValue();
                         String[][] s = Dependencias(ER[1], ER[2], ER[4], ER[0], valr);
+                        ER[7] = s[0][7];
                         if (s[1][1].equals("1")) {
                             ER[3] = ER[2];
                             ER[2] = "VALOR";
@@ -549,6 +556,27 @@ class Mpis{
                             ER[5] = ER[4];
                             ER[4] = "VALOR";
                         }
+                        if (s[1][0].equals("1")){
+                            ER[1] = s[0][1];
+                        }/*else {
+                            boolean b = false;
+                            for (String[] strings : RegRenomeacao) {
+                                if (strings[2].equals(ER[1])) {
+                                    b = true;
+                                    break;
+                                }
+                            }
+
+                            if (b){
+                                int arr[] = PosicaoReg(RegRenomeacao[RegRenomeadoPosicao(Buffer_De_Reordenamento[i][1])][2], "$0", "$0");
+                                Registradores[arr[0]][1] = RegRenomeacao[RegRenomeadoPosicao(Buffer_De_Reordenamento[i][1])][1];
+                                //Buffer_De_Reordenamento[i][1] = Registradores[arr[0]][0];
+                                RegRenomeacao[RegRenomeadoPosicao(Buffer_De_Reordenamento[i][1])][1] = "vazio";
+                                RegRenomeacao[RegRenomeadoPosicao(Buffer_De_Reordenamento[i][1])][2] = "vazio";
+                            }
+
+                        }*/
+                        ER[1] = s[0][1];
                         Estacao_de_Reserva_ALU[i] = cpyVec(ER);
                     }
                 } else {
@@ -679,6 +707,8 @@ class Mpis{
         return 0;
     }
 
+
+
     // Indendifica dependencias
     public String[][] Dependencias(String r0, String r1, String r2, String op, int posi){
         if (Pc == 4){
@@ -693,11 +723,22 @@ class Mpis{
         ER[0][2] = r1;//Registradores[r1][0];
         ER[0][4] = r2;//Registradores[r2][0];
         ER[0][1] = r0;//Registradores[r0][0];
+
         for (int i = 0; i < Buffer_De_Reordenamento.length && !Buffer_De_Reordenamento[i][6].equals(""+posi); i++) {
             if (Buffer_De_Reordenamento[i][4].equals("TMP")){
                 String s1 = r1;//Registradores[r1][0];
                 String s2 = r2;//Registradores[r2][0];
                 String s0 = r0;//Registradores[r0][0];
+
+                String b0 = "";
+                if (Buffer_De_Reordenamento[i][1].startsWith("$r")) {
+                    int arr[] = PosicaoReg(RegRenomeacao[RegRenomeadoPosicao(Buffer_De_Reordenamento[i][1])][2], "$0", "$0");
+                    b0 = Registradores[arr[0]][0];
+                }else {
+                    b0 = s0;
+                }
+
+
 
                 ER[0][0] = op;
                 //ER[1] = ""+r0;
@@ -708,6 +749,15 @@ class Mpis{
                         ER[0][3] = r1;
                         ER[0][2] = "VALOR";
                         ER[1][1] = "1";
+                    }
+                }else if (Buffer_De_Reordenamento[i][1].startsWith("$r")) {
+                    int arr[] = PosicaoReg(RegRenomeacao[RegRenomeadoPosicao(Buffer_De_Reordenamento[i][1])][2], "$0", "$0");
+                    if (s1.equals(Buffer_De_Reordenamento[arr[0]][1])){
+                        if (!r1.equals("VALOR") && !r1.equals("ID")){
+                            ER[0][3] = r1;
+                            ER[0][2] = "VALOR";
+                            ER[1][1] = "1";
+                        }
                     }
                 }
                 //if (Estacao_de_Reserva_ALU[i][1].equals(s2) || Estacao_de_Reserva_mult[i][1].equals(s2) || Estacao_de_Reserva_load[i][1].equals(s2) || Estacao_de_Reserva_store[i][1].equals(s2) || Estacao_de_Reserva_br[i][1].equals(s2)) {
@@ -724,12 +774,36 @@ class Mpis{
                         || Estacao_de_Reserva_store[i][2].equals(s0) || Estacao_de_Reserva_store[i][4].equals(s0) || Estacao_de_Reserva_store[i][3].equals(s0) || Estacao_de_Reserva_store[i][5].equals(s0)
                         || Estacao_de_Reserva_br[i][2].equals(s0) || Estacao_de_Reserva_br[i][4].equals(s0) || Estacao_de_Reserva_br[i][3].equals(s0) || Estacao_de_Reserva_br[i][5].equals(s0)
                 ) { */// ant-dependência
-                if (s0.equals(Buffer_De_Reordenamento[i][2]) || s0.equals(Buffer_De_Reordenamento[i][4]) || s0.equals(Buffer_De_Reordenamento[i][3]) || s0.equals(Buffer_De_Reordenamento[i][5])){
+                if (b0.equals(Buffer_De_Reordenamento[i][2]) || b0.equals(Buffer_De_Reordenamento[i][4]) || b0.equals(Buffer_De_Reordenamento[i][3]) || b0.equals(Buffer_De_Reordenamento[i][5])){
+                    //boolean b = false;
+                    ER[1][0] = "1";
                     int rgr = Renomeacao();
                     ER[0][1] = RegRenomeacao[rgr][0];
                     RegRenomeacao[rgr][2] = r0; // referencia real
-                    ER[1][0] = "1";
-                }
+                    /*
+                    for (String[] strings : RegRenomeacao) {
+                        if (strings[2].equals(r0)) {
+                            b = true;
+                            break;
+                        }
+                    }
+                    if (!b){
+                        int rgr = Renomeacao();
+                        ER[0][1] = RegRenomeacao[rgr][0];
+                        RegRenomeacao[rgr][2] = r0; // referencia real
+                    }else {
+                        int rgr = Renomeacao();
+                        ER[0][1] = RegRenomeacao[rgr][0];
+                        RegRenomeacao[rgr][2] = r0; // referencia real
+                    }*/
+                }/*
+                if (Buffer_De_Reordenamento[i][1].startsWith("$r")) {
+                    int arr[] = PosicaoReg(RegRenomeacao[RegRenomeadoPosicao(Buffer_De_Reordenamento[i][1])][2], "$0", "$0");
+
+                    if (b0.equals(Registradores[arr[0]][0])){
+                        ER[0][7] = "N";
+                    }
+                }*/
             }
         }
         ER[0][6] = ""+Pc;
@@ -841,13 +915,32 @@ class Mpis{
         }
     }
 
+    // Reescreve 'r' no registrador original
+    public int WritRa(){
+        for (int i = 0; i < Buffer_De_Reordenamento.length; i++) {
+            if (Buffer_De_Reordenamento[i][1].startsWith("$r")) {
+                if (!Buffer_De_Reordenamento[i][4].equals("TMP")){
+                    int arr[] = PosicaoReg(RegRenomeacao[RegRenomeadoPosicao(Buffer_De_Reordenamento[i][1])][2], "$0", "$0");
+                    Registradores[arr[0]][1] = RegRenomeacao[RegRenomeadoPosicao(Buffer_De_Reordenamento[i][1])][1];
+                    RegRenomeacao[RegRenomeadoPosicao(Buffer_De_Reordenamento[i][1])][1] = "vazio";
+                    RegRenomeacao[RegRenomeadoPosicao(Buffer_De_Reordenamento[i][1])][2] = "vazio";
+                }else {
+                    return 0;
+                }
+
+            }
+        }
+        return 0;
+    }
+
     // Encontra a proxima instrução
     void find(){
-        while ( Pc < VecInstructUnit.length) {
+        while ( Buffer_De_Reordenamento[VecInstructUnit.length-1][5].equals("WR")) {
             System.out.printf("\n\n\n\n");
             AtzPorCl();
             AtzD();
-            Decode(Pc);
+            WritRa();
+            if (Pc < VecInstructUnit.length){Decode(Pc);} // Repita para mais de uma instrucao
             Despacho();
             System.out.println("UnidadesFuncionais: ");
             imprimirMatriz(UnidadesFuncionais);
@@ -859,8 +952,9 @@ class Mpis{
             imprimirMatriz(Estacao_de_Reserva_ALU);
             System.out.printf("Pc: " + Pc + " < " + VecInstructUnit.length);
             System.out.println();
+            Ciclos++;
         }
-        Ciclos++;
+
     }
     void Mips(){
         //
