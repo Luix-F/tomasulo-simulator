@@ -68,8 +68,8 @@ class Mpis{
 
 
     // Ciclos por instrução
-    static int Load = 2;
-    static int Store = 1;
+    static int Load = 3;
+    static int Store = 2;
     static int Mult = 2;
     static int Add = 1;
 
@@ -80,6 +80,8 @@ class Mpis{
     int Ciclos = 0;
     // Program couter
     int Pc = 0;
+
+    int Issue = 0;
 
 
 
@@ -480,7 +482,8 @@ class Mpis{
                 }else {
                     Buffer_De_Reordenamento[i][3] = s[4];
                 }
-                Buffer_De_Reordenamento[i][6] = ""+Pc;
+                //Buffer_De_Reordenamento[i][6] = ""+Pc;
+                Buffer_De_Reordenamento[i][6] = ""+Issue;
                 return 0;
             }
         }
@@ -495,6 +498,7 @@ class Mpis{
                 Estacao_de_Reserva_ALU[i] = s;
                 BufferDeReordenamento(s);
                 Pc++;
+                Issue++;
                 return 0;
             }
         }
@@ -507,6 +511,7 @@ class Mpis{
                 Estacao_de_Reserva_mult[i] = s;
                 BufferDeReordenamento(s);
                 Pc++;
+                Issue++;
                 return 0;
             }
         }
@@ -519,6 +524,7 @@ class Mpis{
                 Estacao_de_Reserva_load[i] = s;
                 BufferDeReordenamento(s);
                 Pc++;
+                Issue++;
                 return 0;
             }
         }
@@ -531,6 +537,7 @@ class Mpis{
                 Estacao_de_Reserva_store[i] = s;
                 BufferDeReordenamento(s);
                 Pc++;
+                Issue++;
                 return 0;
             }
         }
@@ -543,6 +550,7 @@ class Mpis{
                 Estacao_de_Reserva_br[i] = s;
                 BufferDeReordenamento(s);
                 Pc++;
+                Issue++;
                 return 0;
             }
         }
@@ -839,7 +847,8 @@ class Mpis{
                 }*/
             }
         }
-        ER[0][6] = ""+Pc;
+        //ER[0][6] = ""+Pc;
+        ER[0][6] = ""+Issue;
         return ER;
     }
 
@@ -999,15 +1008,33 @@ class Mpis{
         }
         return 0;
     }
+    
+    // Verifica fim do programa
+    public boolean Fim(){
+        if (Pc == VecInstructUnit.length){
+            for (int i = 0; i < 5; i++) {
+                if (Buffer_De_Reordenamento[i][5].equals("WR")) {
+                    return true;
+                }
+            }
+        }else {
+            return true;
+        }
+        return false;
+    }
 
     // Encontra a proxima instrução
     void find(){
-        while ( Buffer_De_Reordenamento[VecInstructUnit.length-1][5].equals("WR")) {
+        while ( Fim()){ //Buffer_De_Reordenamento[VecInstructUnit.length-1][5].equals("WR")) {
             System.out.printf("\n\n\n\n");
             AtzPorCl();
             AtzD();
             WritRa();
-            if (Pc < VecInstructUnit.length){Decode(Pc);} // Repita para mais de uma instrucao
+            if (Pc < VecInstructUnit.length && !(VecInstructUnit[Pc][0].startsWith(":"))){
+                Decode(Pc); // Repita para mais de uma instrucao
+            }else if (Pc < VecInstructUnit.length){
+                Pc++;
+            }
             Despacho();
             System.out.println("UnidadesFuncionais: ");
             imprimirMatriz(UnidadesFuncionais);
@@ -1020,6 +1047,7 @@ class Mpis{
             System.out.printf("Pc: " + Pc + " < " + VecInstructUnit.length);
             System.out.println();
             Ciclos++;
+            System.out.printf("Ciclos: " + Ciclos);
         }
 
     }
